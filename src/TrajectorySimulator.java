@@ -75,12 +75,10 @@ public class TrajectorySimulator  {
 	
 	// These are used for analyzing the values
 	private static double[] bestAttemptValues;
-	private static double beforePreviousAngle;
-	private static double previousAngle;
-	private static double angleRateOfChange;
 	private static double minDistance;
-	private static double previousDistance;
-	private static boolean distanceDecreasing;
+	
+	private static double minAngle;
+	private static double maxAngle;
 	
 	private static Random rand;
 	
@@ -96,16 +94,17 @@ public class TrajectorySimulator  {
 		frame.setSize(width, height);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		changeInTime = 0.005;
+		changeInTime = 0.007;
 		shooterX = 451;
 		shooterY = 10;
-		shooterZ = 350;		
+		shooterZ = 100;		
 		goalX = 451;
 		goalY = 241.3;
 		goalZ = 520;
 		distGoalX = Math.sqrt(Math.pow(goalX - shooterX, 2) + Math.pow(goalZ - shooterZ, 2));
 		distGoalY = goalY - shooterY;
-		frame.add(new goalDrawing(distGoalX, distGoalY, 20, 88.9));
+		point(distGoalX, distGoalY - 88.9/2, Color.GREEN);
+		frame.add(new goalDrawing(distGoalX, distGoalY - 10, 20, 88.9));
 		frame.setVisible(true);
 		angleOfShooter = 10;
 		velocity = 1000;
@@ -124,11 +123,9 @@ public class TrajectorySimulator  {
 		minDistance = -1;
 		timer = System.currentTimeMillis();
 		bestAttemptValues = new double[2];
-		beforePreviousAngle = -1;
-		previousAngle = -1;
-		angleRateOfChange = 0.5;
-		previousDistance = -1;
-		distanceDecreasing = true;
+		maxAngle = 85;
+		minAngle = 10;
+		angleOfShooter = 25;
 		
 		for (int i = 0; true; i++) {
 			
@@ -155,7 +152,7 @@ public class TrajectorySimulator  {
 				if (j > 100 || (j > 10 && initialVelocity > 1700)) foundValue = false;
 			}
 			if (foundValue) {
-				double guessDistance = Math.sqrt(Math.pow(distGoalX - x, 2) + Math.pow(distGoalY - 44.45 + 13 - y, 2));
+				double guessDistance = Math.sqrt(Math.pow(distGoalX - x, 2) + Math.pow(distGoalY - 44.45 - y, 2));
 				if (guessDistance < minDistance || minDistance == -1) {
 					minDistance = guessDistance;
 					bestAttemptValues[0] = angleOfShooter;
@@ -166,28 +163,15 @@ public class TrajectorySimulator  {
 //				System.out.println("ANGLE, DISTANCE: " + angleOfShooter + ", " + guessDistance);
 //				Thread.sleep(300);
 //				point(angleOfShooter, guessDistance + 200, new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255)));
-				if (guessDistance > 3) {
+				if (guessDistance > 5) {
 					
-					double initialAngle = angleOfShooter;
-					if (distanceDecreasing) {
-						angleOfShooter += 5;
-						if (guessDistance - previousDistance > 0 && previousDistance != -1) {
-							angleOfShooter = beforePreviousAngle;
-							distanceDecreasing = false;
-						}
-						previousDistance = guessDistance;
+					if (y < distGoalY - 44.45) {
+						minAngle = angleOfShooter;
 					} else {
-						int sign = 1;
-						if (angleOfShooter < 0 || guessDistance > previousDistance) sign = -1;
-						if (guessDistance > 30) angleRateOfChange = 2 * sign;
-						else if (guessDistance > 20) angleRateOfChange = 1.5 * sign;
-						else if (guessDistance > 10) angleRateOfChange = 1 * sign;
-						else if (guessDistance > 7) angleRateOfChange = 0.5 * sign;
-						angleOfShooter += angleRateOfChange;
+						maxAngle = angleOfShooter;
 					}
+					angleOfShooter = (maxAngle + minAngle) / 2;
 					
-					beforePreviousAngle = previousAngle;
-					previousAngle = initialAngle;
 				} else break;
 			} else angleOfShooter += 0.1;
 			if (i > 200) break;
