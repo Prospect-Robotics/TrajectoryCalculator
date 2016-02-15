@@ -131,8 +131,8 @@ public class TrajectorySimulator  {
 			distGoalX = Math.sqrt(Math.pow(goalX - shooterX, 2) + Math.pow(goalZ - shooterZ, 2))
 						- (5 /* dist from cam to shooter */ + 20 /* dist from shooter axel to end of shooter */
 						   * Math.cos(angleOfShooter));
-			distGoalY = (goalY - shooterY) + 40 /* dist from camera to ground */
-						- Math.sin(angleOfShooter);
+			distGoalY = goalY - + 20 /* dist from shooter axel to end of shooter */
+						* Math.sin(angleOfShooter);
 			
 			for (int j = 0; !velocityTuned && foundValue; j++) {
 				
